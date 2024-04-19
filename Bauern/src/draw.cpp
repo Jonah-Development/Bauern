@@ -1,4 +1,5 @@
 #include "board.h"
+#include "draw.h"
 #include <string>
 #include <iostream>
 
@@ -42,10 +43,10 @@ size_t constexpr index(size_t i)
 	return index;
 }
 
-void drawBoard(const Board& board)
+void Board::draw(void) const
 {
-	BB black = board.getBlack();
-	BB white = board.getWhite();
+	BB black = getBlack();
+	BB white = getWhite();
 	
 	for (int32_t i = 0; i < 49; i++, black >>= 1, white >>= 1)
 	{
@@ -62,4 +63,9 @@ void drawBoard(const Board& board)
 	}
 	std::cout << boardRaw;
 	return;
+}
+
+std::ostream& operator<<(std::ostream& os, const Move& mv)
+{
+	return os << (uint32_t)mv.src << ',' << (uint32_t)mv.dst;
 }

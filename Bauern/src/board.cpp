@@ -1,4 +1,9 @@
 #include "board.h"
+#ifdef _MSC_VER
+#include <intrin.h>
+#else
+#include <x86intrin.h>  // Not just <immintrin.h> for compilers other than icc
+#endif
 using namespace board7x7;
 
 constexpr int32_t squareValueLookup[] =
@@ -24,27 +29,30 @@ int32_t Board::search(int32_t alpha, int32_t beta, uint32_t depth)
     // generate moves
     Move moves[MAX_MOVES];
     if (!verify())
-        throw "Error, WTF???";
+        throw "Error, corrupted bitboards (from search function)";
     const size_t numMoves = moveGen(moves);
 
     if (numMoves == 0)
-        return m_SideToMove != Player::white ? Infinity : -Infinity;
+        return m_SideToMove == Player::white ? Infinity : -Infinity;
 
-    //if constexpr (_IsRoot)
-    //    if (numMoves)
-    //        m_BestMove = moves[0];
+    if constexpr (_IsRoot)
+        m_BestMove = moves[0];
 
     const Player sideToMove = m_SideToMove;
     for (size_t i = 0; i < numMoves; i++)
     {
         const Move& move = moves[i];
+
+        int32_t score;
         // we prefer early wins
         if (isWinningMove(move.dst, sideToMove))
-            return sideToMove == Player::white ? (Infinity + depth) : 0-(-Infinity - depth);
-
-        makeMove(move);
-        const int32_t score = -search<false>(-beta, -alpha, depth - 1);
-        unmakeMove(move);
+            score =  sideToMove == Player::white ? (Infinity + depth) : (-Infinity - depth);
+        else
+        {
+            makeMove(move);
+            score = -search<false>(-beta, -alpha, depth - 1);
+            unmakeMove(move);
+        }
 
         if (score >= beta)
             return beta;
@@ -88,6 +96,11 @@ int32_t Board::eval(void)
 bool Board::isWinningMove(const Si index, const Player sideToMove) const
 {
     const BB pos = ((sideToMove == Player::white) ? m_White : m_Black) | (1ull << index);
+
+    // if our piece has no neighbors, we cannot win
+    // this is just an approximation, if there are neighbors around
+    if ((_rotl64(maskNeighbour, index) & pos) == 0)
+        return false;
 
     // if we are at the end of the line
     BB mask = winningPosNord(index);

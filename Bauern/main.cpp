@@ -9,15 +9,15 @@ int main()
 {
 	Board board;
 
-	for (Si i = 0; i < 100; )
+	for (Si i = 0; i < 100; i++)
 	{
-		std::cout << board.search() << std::endl;
-		board.playBestMove();
-		drawBoard(board);
+		std::cout << board.playBestMove((i & 1) ? 5 : 3) << std::endl;
+		board.draw();
+		std::cout << '[' << board.getBestMove() << "], ";
 		std::cout << std::endl << std::string(75, '-') << std::endl;
 
 		if (!board.verify())
-			throw "Error, whu8fewb huvfe uho !!!";
+			throw "Error, corrupted bitboards";
 	}
 
 	return 0;

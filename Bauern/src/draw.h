@@ -1,5 +1,5 @@
 #pragma once
-
 #include "board.h"
+#include <iostream>
 
-void drawBoard(const board7x7::Board& board);
+std::ostream& operator<<(std::ostream& os, const board7x7::Move& mv);

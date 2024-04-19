@@ -32,6 +32,7 @@ namespace board7x7
 	constexpr BB maskBorderEast = 0b0000001000000100000010000001000000100000010000001;
 	constexpr BB maskBorderWest = maskBorderEast << 6;
 	constexpr BB maskBorder = maskBorderSouth | maskBorderNorth | maskBorderEast | maskBorderWest;
+	constexpr BB maskNeighbour = 9727775195120271810;
 
 	constexpr int32_t Infinity = 0x3fffffff;
 
@@ -119,15 +120,24 @@ namespace board7x7
 			m_SideToMove(Player::white)
 		{ }
 
+		void draw(void) const;
+
 		inline BB getWhite(void) const { return m_White; }
 		inline BB getBlack(void) const { return m_Black; }
 
 		template <bool _IsRoot = true>
 		int32_t search(int32_t alpha = -Infinity, int32_t beta = Infinity, uint32_t depth = 6);
 		int32_t eval(void);
-		void playBestMove(void)
+		int playBestMove(uint32_t depth = 6)
 		{
+			int32_t res = search(-Infinity, Infinity, depth);
 			makeMove(m_BestMove);
+			return res;
+		}
+
+		Move getBestMove(void) const
+		{
+			return m_BestMove;
 		}
 
 		bool verify(void) const
